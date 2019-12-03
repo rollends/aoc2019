@@ -1,11 +1,11 @@
 module Day1
-    ( day1
-    ) where
+  ( day1
+  ) where
 
 computeFuelForMass mass = max 0 $ (div mass 3) - 2
 
 computeFuelForModule fuelNeeded 0 = fuelNeeded
-computeFuelForModule fuelNeeded mass = 
+computeFuelForModule fuelNeeded mass =
   let
     fuel = computeFuelForMass mass
   in
