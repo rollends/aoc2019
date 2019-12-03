@@ -1,20 +1,24 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+
 module Day2
   ( day2, day2part2
   ) where
 
-import Data.List
+import RIO
+import qualified RIO.List as L
+import qualified RIO.List.Partial as L'
 
-second (a,b) = b
+import RIO.List.Partial((!!))
 
 replace :: Int -> Int -> [Int] -> [Int]
 replace index value list =
   let
-    ilist = zip [0..] list
-    (ibefore, iafter) = partition (\(a,b) -> a < index) ilist
-    before = map second ibefore
-    after = map second iafter
+    ilist = L.zip [0..] list
+    (ibefore, iafter) = L.partition (\(a,b) -> a < index) ilist
+    before = map snd ibefore
+    after = map snd iafter
   in
-    before ++ [value] ++ (tail after)
+    before ++ [value] ++ (L'.tail after)
 
 makeNewState :: [Int] -> Int -> Int -> [Int]
 makeNewState state a b =
@@ -50,10 +54,10 @@ operate index x parameters state = [-1] -- le bad
 splitState :: Int -> [Int] -> ([Int], Int, [Int], [Int])
 splitState index state =
   let
-    (before, include) = splitAt index state
-    (operation, rest) = splitAt 4 include
+    (before, include) = L.splitAt index state
+    (operation, rest) = L.splitAt 4 include
   in
-    (before, head operation, tail operation, rest)
+    (before, L'.head operation, L'.tail operation, rest)
 
 computeStep :: Int -> [Int] -> [Int]
 computeStep index state =
@@ -68,7 +72,7 @@ day2 state =
   let
     startState = make1201state state
   in
-    head $ computeStep 0 startState
+    L'.head $ computeStep 0 startState
 
 -- Find input that gives output
 day2part2 :: [Int] -> Int
@@ -79,7 +83,7 @@ day2part2_internal state 10000 = -1 --failed to find
 day2part2_internal state i =
   let
     startState = makeNewState state (div i 100) (mod i 100)
-    result = head $ computeStep 0 startState
+    result = L'.head $ computeStep 0 startState
   in
     day2part2_check state i result
 

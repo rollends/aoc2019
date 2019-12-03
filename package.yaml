@@ -1,10 +1,10 @@
 name:                aoc2019
 version:             0.1.0.0
-github:              "githubuser/aoc2019"
+github:              "RollenDS/aoc2019"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2019 Author name here"
+author:              "Rollen S. D'Souza"
+maintainer:          "rollensdsouza@gmail.com"
+copyright:           "2019 Rollen S. D'Souza"
 
 extra-source-files:
 - README.md
@@ -17,19 +17,45 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/aoc2019#readme>
+description:         Please see the README on GitHub at <https://github.com/RollenDS/aoc2019#readme>
 
 dependencies:
 - base >= 4.7 && < 5
+- rio
 
 library:
   source-dirs: src
 
 executables:
-  aoc2019-exe:
-    main:                Main.hs
-    source-dirs:         app
+  aoc2019-day1:
+    main:                AppDay1.hs
+    source-dirs:         day1
     ghc-options:
+    - -Wall
+    - -Wcompat
+    - -Widentities
+    - -Wincomplete-record-updates
+    - -Wincomplete-uni-patterns
+    - -Wpartial-fields
+    - -Wredundant-constraints
+    - -Werror
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - aoc2019
+  aoc2019-day2:
+    main:                AppDay2.hs
+    source-dirs:         day2
+    ghc-options:
+    - -Wall
+    - -Wcompat
+    - -Widentities
+    - -Wincomplete-record-updates
+    - -Wincomplete-uni-patterns
+    - -Wpartial-fields
+    - -Wredundant-constraints
+    - -Werror
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
@@ -41,6 +67,14 @@ tests:
     main:                TestSuite.hs
     source-dirs:         test
     ghc-options:
+    - -Wall
+    - -Wcompat
+    - -Widentities
+    - -Wincomplete-record-updates
+    - -Wincomplete-uni-patterns
+    - -Wpartial-fields
+    - -Wredundant-constraints
+    - -Werror
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N

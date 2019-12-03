@@ -1,6 +1,10 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+
 module Day1
   ( day1
   ) where
+
+import RIO
 
 computeFuelForMass mass = max 0 $ (div mass 3) - 2
 
