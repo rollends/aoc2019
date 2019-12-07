@@ -4,6 +4,7 @@ module Util
   (
     AOCApp(AOCApp, appName, appInputFile),
     runApp,
+    uncurry3
   ) where
 
 import RIO
@@ -27,3 +28,6 @@ runApp name innerapp = do
       appInputFile = arguments !! 0
     }
     runRIO app innerapp
+
+uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
+uncurry3 f (a1, b1, c1) = f a1 b1 c1

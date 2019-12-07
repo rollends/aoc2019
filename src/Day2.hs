@@ -10,82 +10,115 @@ import qualified RIO.List.Partial as L'
 
 import RIO.List.Partial((!!))
 
-replace :: Int -> Int -> [Int] -> [Int]
-replace index value list =
+import Util
+
+day2 :: Int -> Int -> [Int] ->Int
+day2 a b state=
   let
-    ilist = L.zip [0..] list
-    (ibefore, iafter) = L.partition (\(a,b) -> a < index) ilist
-    before = map snd ibefore
-    after = map snd iafter
+    initMemory = (ModifiedState 2 b) . (ModifiedState 1 a) . InitialState $ state
+    initialComputer = Computer {memory = initMemory, pc = 0}
   in
-    before ++ [value] ++ (L'.tail after)
+    readMemory (runComputerToTermination initialComputer) 0
 
-makeNewState :: [Int] -> Int -> Int -> [Int]
-makeNewState state a b =
+data ComputerMemory =
+  InitialState [Int] |
+  ModifiedState Int Int ComputerMemory
+
+data Computer = Computer { memory :: ComputerMemory, pc :: Int }
+
+data Instruction =
+  Add Int Int Int | Multiply Int Int Int | Stop
+
+-- Reads value at address of computer's memory.
+-- This is a recursive call that starts at the latest
+-- modification and works backwards
+readMemory :: ComputerMemory -> Int -> Int
+
+-- At the first state, the value of memory is exactly
+-- what is found in that address of the memory.
+readMemory (InitialState a) loc =
+  a !! loc
+
+-- If the memory was modified at the location we are
+-- reading, return the modified value, otherwise go
+-- farther back in time to find modifications.
+readMemory (ModifiedState mloc mval prevState) loc =
+  if mloc == loc then
+    mval
+  else
+    readMemory prevState loc
+
+-- Reads an instruction from a given memory location.
+-- Only reads an extra 3 arguments if necessary.
+fetchInstruction :: ComputerMemory -> Int -> Instruction
+fetchInstruction state loc =
+  case (readMemory state loc) of
+    1 -> uncurry3 Add $ fetchArguments state (loc + 1)
+    2 -> uncurry3 Multiply $ fetchArguments state (loc + 1)
+    99-> Stop
+
+-- Simply reads 3 integers in-order from memory.
+fetchArguments :: ComputerMemory -> Int -> (Int, Int, Int)
+fetchArguments state loc =
   let
-    replace1 = replace 1 a
-    replace2 = replace 2 b
+    readAt = readMemory state
   in
-    replace1 . replace2 $ state
+    (readAt $ loc, readAt $ loc + 1, readAt $ loc + 2)
 
-make1201state state =
-  makeNewState state 12 2
+-- Executes an Instruction to produce a new State as well as a flag to stop!
+executeInstruction :: ComputerMemory -> Instruction -> (ComputerMemory, Bool)
 
-operate index 1 parameters state =
+-- Add Instruction
+executeInstruction state (Add srcX srcY dest) =
   let
-    arg1 = state !! (parameters !! 0)
-    arg2 = state !! (parameters !! 1)
+    readAt = readMemory state
+    x = readAt srcX
+    y = readAt srcY
+    z = x + y
   in
-    computeStep (index+4) $
-      replace (parameters !! 2) (arg1+arg2) state
+    (ModifiedState dest z state, True)
 
-operate index 2 parameters state =
+-- Add Instruction
+executeInstruction state (Multiply srcX srcY dest) =
   let
-    arg1 = state !! (parameters !! 0)
-    arg2 = state !! (parameters !! 1)
+    readAt = readMemory state
+    x = readAt srcX
+    y = readAt srcY
+    z = x * y
   in
-    computeStep (index+4) $
-      replace (parameters !! 2) (arg1*arg2) state
+    (ModifiedState dest z state, True)
 
-operate index 99 parameters state = state
+-- Stop Instruction. Return False to stop.
+executeInstruction state Stop = (state, False)
 
-operate index x parameters state = [-1] -- le bad
 
-splitState :: Int -> [Int] -> ([Int], Int, [Int], [Int])
-splitState index state =
+-- Runs the Computer and returns the memory at termination
+runComputerToTermination :: Computer -> ComputerMemory
+runComputerToTermination computer =
   let
-    (before, include) = L.splitAt index state
-    (operation, rest) = L.splitAt 4 include
+    mem = memory computer
+    fetch = (fetchInstruction mem) . (pc)
+    execute = executeInstruction mem
   in
-    (before, L'.head operation, L'.tail operation, rest)
-
-computeStep :: Int -> [Int] -> [Int]
-computeStep index state =
-  let
-    (_, opcode, parameters, _) = splitState index state
-  in
-    operate index opcode parameters state
-
-
-day2 :: [Int] -> Int
-day2 state =
-  let
-    startState = make1201state state
-  in
-    L'.head $ computeStep 0 startState
+    case execute (fetch computer) of
+      (finalState, False) -> finalState
+      (newState, True) -> runComputerToTermination (Computer {memory = newState, pc = 4 + pc computer})
 
 -- Find input that gives output
-day2part2 :: [Int] -> Int
-day2part2 state = day2part2_internal state 0
+day2part2 :: Int -> [Int] -> Int
 
-day2part2_internal state 10000 = -1 --failed to find
+day2part2 number state = day2part2_internal state number 0
 
-day2part2_internal state i =
+--Failed to find an input that works...
+day2part2_internal _ _ 10000 = -1
+
+day2part2_internal state numberToFind i =
   let
-    startState = makeNewState state (div i 100) (mod i 100)
-    result = L'.head $ computeStep 0 startState
+    a = div i 100
+    b = mod i 100
   in
-    day2part2_check state i result
+    if numberToFind == day2 a b state then
+      100 * a + b
+    else
+      day2part2_internal state numberToFind (i+1)
 
-day2part2_check state index 19690720 = index
-day2part2_check state index result = day2part2_internal state (index+1)
