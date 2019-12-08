@@ -2,7 +2,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Day3
-  ( day3
+  ( day3,
+    day3part2
   ) where
 
 import RIO
@@ -10,7 +11,6 @@ import qualified RIO.List as L
 import qualified RIO.List.Partial as L'
 import RIO.List.Partial ((!!))
 import Text.Read as TR
-
 
 data Direction = Up | Down | Left | Right
 data Motion =
@@ -26,18 +26,28 @@ day3 lines =
     player2 = map Day3.fromString (lines !! 1)
     intersectOp = \start motion -> findSegmentCrossingLines (0, 0) player1 start motion []
   in
-    traversePlayerAndFindIntersections intersectOp (0,0) player2
+    traversePlayerAndFindIntersections (\(a,b) -> (abs a) + (abs b)) intersectOp (0,0) player2
 
-traversePlayerAndFindIntersections _ _ [] = maxBound
-traversePlayerAndFindIntersections intersectOp basePoint (firstMotion:playerMotions) =
+day3part2 :: [[String]] -> Int
+day3part2 lines =
+  let
+    player1 = map Day3.fromString (lines !! 0)
+    player2 = map Day3.fromString (lines !! 1)
+    intersectOp = \start motion -> findSegmentCrossingLines (0, 0) player1 start motion []
+    stepCost = \point -> (stepsToPoint player1 point) + (stepsToPoint player2 point)
+  in
+    traversePlayerAndFindIntersections stepCost intersectOp (0,0) player2
+
+traversePlayerAndFindIntersections _ _ _ [] = maxBound
+traversePlayerAndFindIntersections costFx intersectOp basePoint (firstMotion:playerMotions) =
   let
     newBasePoint = movePoint basePoint firstMotion
     intersectPoints = intersectOp basePoint firstMotion
-    sortedDistances = L.sort $ map (\(a,b) -> (abs a) + (abs b)) intersectPoints
+    sortedDistances = L.sort $ map costFx intersectPoints
     bestDistance = (L.headMaybe sortedDistances)
   in case bestDistance of
-    Nothing -> traversePlayerAndFindIntersections intersectOp newBasePoint playerMotions
-    Just best -> min best $ traversePlayerAndFindIntersections intersectOp newBasePoint playerMotions
+    Nothing -> traversePlayerAndFindIntersections costFx intersectOp newBasePoint playerMotions
+    Just best -> min best $ traversePlayerAndFindIntersections costFx intersectOp newBasePoint playerMotions
 
 findSegmentCrossingLines :: (Int, Int) -> [Motion] -> (Int, Int) -> Motion -> [(Int, Int)] -> [(Int, Int)]
 findSegmentCrossingLines origin [] startPoint motion intersections = intersections
@@ -55,6 +65,33 @@ findSegmentCrossingLines origin (newFrame:frameMotions) startPoint motion inters
       findSegmentCrossingLines newOrigin frameMotions newStartPoint motion (
         intersections ++ [(ox+offx, oy+offy)]
       )
+
+stepsToPoint :: [Motion] -> (Int, Int) -> Int
+stepsToPoint motions point =
+  _stepsToPoint motions (0,0) point 0
+
+_stepsToPoint [] _ _ count = count
+_stepsToPoint (motion:restOfMotions) origin point count =
+  let
+    newOrigin = movePoint origin motion
+    stepsToTake = _stepsAlongLineToPoint motion origin point 0
+    Motion _ totalStepsAlongLine = motion
+  in
+    if totalStepsAlongLine == stepsToTake then
+      _stepsToPoint restOfMotions newOrigin point (count + stepsToTake)
+    else
+      count + stepsToTake
+
+_stepsAlongLineToPoint (Motion dir 0) origin point count = count
+_stepsAlongLineToPoint (Motion dir dist) origin point count =
+  let
+    oneStep = Motion dir 1
+    newOrigin = movePoint origin oneStep
+  in
+    if origin == point then
+      count
+    else
+      _stepsAlongLineToPoint (Motion dir (dist-1)) newOrigin point (count + 1)
 
 isAnIntersection :: (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Maybe (Int, Int)
 isAnIntersection (x1, y1) (x2, y2) (x3, y3) (x4, y4) =

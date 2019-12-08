@@ -1,5 +1,6 @@
 import Day2
 import Day3
+import Day4
 
 main :: IO ()
 main = do
@@ -8,6 +9,7 @@ main = do
   day3_test2
   day3_test3
   day3_test4
+  day4_test1
 
 day2_test1 :: IO ()
 day2_test1 = do
@@ -42,3 +44,9 @@ day3_test4 = do
   (putStrLn . show . day3) $ [
     ["R2","U2","L4","D5","R3"],
     ["D2","L1","U10"]]
+
+day4_test1 :: IO()
+day4_test1 = do
+  putStrLn "\nDay 4 Test 1:"
+  (putStrLn . show) $ day4 125730 579381
+

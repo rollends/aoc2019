@@ -20,6 +20,9 @@ appDay3 =
     logInfo $ fromString "Part 1: "
     logInfo . displayShow $
       day3 (map string_to_array (lines . T.unpack $ file_content))
+    logInfo $ fromString "Part 2: "
+    logInfo . displayShow $
+      day3part2 (map string_to_array (lines . T.unpack $ file_content))
 
 main :: IO ()
 main = runApp "Day 3" appDay3
