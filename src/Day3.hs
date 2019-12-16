@@ -13,11 +13,28 @@ import RIO.List.Partial ((!!))
 import Text.Read as TR
 
 data Direction = Up | Down | Left | Right
+
+type Point = (Int, Int)
+
 data Motion =
   Motion {
     direction :: Direction,
-    distance :: Int
+    distance :: Point
   }
+
+data Segment =
+  Segment {
+    start :: Point,
+    end :: Point
+  }
+
+day3 :: [[String]] -> Int
+day3 lines =
+  let
+    player1 = map Day3.fromString (lines !! 0)
+    player2 = fromMotion $ map Day3.fromString (lines !! 1)
+  in
+    
 
 day3 :: [[String]] -> Int
 day3 lines =
@@ -123,6 +140,28 @@ fromString ('R':s) =
     direction = Day3.Right,
     distance = TR.read s
   }
+
+x :: Point -> Int
+x p = fst p
+
+y :: Point -> Int
+y p = snd p
+
+fromMotion :: [Motion] -> [Segment]
+fromMotion motions =
+  _fromMotion (0, 0) motions []
+
+_fromMotion :: (Int, Int) -> [Motion] -> [Segment] -> [Segment]
+_fromMotion _ [] path = path
+_fromMotion startPoint (motion:restOfMotions) path =
+  let
+    endPoint = movePoint startPoint motion
+  in
+    _fromMotion endPoint restOfMotions $ Segment startPoint endPoint
+
+moveSegment :: Segment -> Motion -> Segment
+moveSegment seg motion =
+  Segment (movePoint (start seg) motion) (movePoint (end seg) motion)
 
 movePoint :: (Int, Int) -> Motion -> (Int, Int)
 movePoint (x,y) (Motion Day3.Up d) = (x, y+d)
