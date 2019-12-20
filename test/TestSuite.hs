@@ -2,6 +2,9 @@ import Day2
 import Day3
 import Day4
 import Day5
+import Day6
+
+import qualified RIO.Text as T
 
 main :: IO ()
 main = do
@@ -14,6 +17,7 @@ main = do
   day5part2_test1
   day5part2_test2
   day5part2_test3
+  day6_test1
 
 day2_test1 :: IO ()
 day2_test1 = do
@@ -85,3 +89,20 @@ day4_test1 = do
   putStrLn "\nDay 4 Test 1:"
   (putStrLn . show) $ day4 125730 579381
 
+
+day6_test1 :: IO ()
+day6_test1 = do
+  putStrLn "\nDay 6 Test 1:"
+  (putStrLn . show . day6) $ [
+    (T.pack "COM", T.pack "B"),
+    (T.pack "B", T.pack "C"),
+    (T.pack "C", T.pack "D"),
+    (T.pack "D", T.pack "E"),
+    (T.pack "E", T.pack "F"),
+    (T.pack "B", T.pack "G"),
+    (T.pack "G", T.pack "H"),
+    (T.pack "D", T.pack "I"),
+    (T.pack "E", T.pack "J"),
+    (T.pack "J", T.pack "K"),
+    (T.pack "K", T.pack "L")]
+  putStrLn "Expected : 42"

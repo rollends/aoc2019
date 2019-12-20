@@ -95,6 +95,23 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - aoc2019
+  aoc2019-day6:
+    main:                AppDay6.hs
+    source-dirs:         day6
+    ghc-options:
+    - -Wall
+    - -Wcompat
+    - -Widentities
+    - -Wincomplete-record-updates
+    - -Wincomplete-uni-patterns
+    - -Wpartial-fields
+    - -Wredundant-constraints
+    - -Werror
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - aoc2019
 
 tests:
   aoc2019-test:
