@@ -12,16 +12,19 @@ import qualified RIO.List.Partial as L'
 import RIO.List.Partial ((!!))
 import Text.Read as TR
 
-data Direction = Up | Down | Left | Right
 
 type Point = (Int, Int)
 
+data Direction = Up | Down | Left | Right
+
+-- Captures a basic translation transform.
 data Motion =
   Motion {
     direction :: Direction,
-    distance :: Point
+    distance :: Int
   }
 
+-- Stores a single line segment.
 data Segment =
   Segment {
     start :: Point,
@@ -32,56 +35,38 @@ day3 :: [[String]] -> Int
 day3 lines =
   let
     player1 = map Day3.fromString (lines !! 0)
-    player2 = fromMotion $ map Day3.fromString (lines !! 1)
+    player2 = fromMotions $ map Day3.fromString (lines !! 1)
+    intersectionPoints = L.foldl (++) [] $ map (intersections player1) player2
+    costFx = \(a,b) -> (abs a) + (abs b)
   in
-    
-
-day3 :: [[String]] -> Int
-day3 lines =
-  let
-    player1 = map Day3.fromString (lines !! 0)
-    player2 = map Day3.fromString (lines !! 1)
-    intersectOp = \start motion -> findSegmentCrossingLines (0, 0) player1 start motion []
-  in
-    traversePlayerAndFindIntersections (\(a,b) -> (abs a) + (abs b)) intersectOp (0,0) player2
+    L'.head . L.sort . (map costFx) $ intersectionPoints
 
 day3part2 :: [[String]] -> Int
 day3part2 lines =
   let
     player1 = map Day3.fromString (lines !! 0)
-    player2 = map Day3.fromString (lines !! 1)
-    intersectOp = \start motion -> findSegmentCrossingLines (0, 0) player1 start motion []
-    stepCost = \point -> (stepsToPoint player1 point) + (stepsToPoint player2 point)
+    motionPlayer2 = map Day3.fromString (lines !! 1)
+    player2 = fromMotions motionPlayer2
+    intersectionPoints = L.foldl (++) [] $ map (intersections player1) player2
+    stepCost = \point -> (stepsToPoint player1 point) + (stepsToPoint motionPlayer2 point)
   in
-    traversePlayerAndFindIntersections stepCost intersectOp (0,0) player2
+    L'.head . L.sort . (map stepCost) $ intersectionPoints
 
-traversePlayerAndFindIntersections _ _ _ [] = maxBound
-traversePlayerAndFindIntersections costFx intersectOp basePoint (firstMotion:playerMotions) =
-  let
-    newBasePoint = movePoint basePoint firstMotion
-    intersectPoints = intersectOp basePoint firstMotion
-    sortedDistances = L.sort $ map costFx intersectPoints
-    bestDistance = (L.headMaybe sortedDistances)
-  in case bestDistance of
-    Nothing -> traversePlayerAndFindIntersections costFx intersectOp newBasePoint playerMotions
-    Just best -> min best $ traversePlayerAndFindIntersections costFx intersectOp newBasePoint playerMotions
+intersections :: [Motion] -> Segment -> [(Int, Int)]
+intersections motions segment = _intersections (0, 0) motions segment []
 
-findSegmentCrossingLines :: (Int, Int) -> [Motion] -> (Int, Int) -> Motion -> [(Int, Int)] -> [(Int, Int)]
-findSegmentCrossingLines origin [] startPoint motion intersections = intersections
-findSegmentCrossingLines origin (newFrame:frameMotions) startPoint motion intersections =
+_intersections _ [] _ result = result
+_intersections origin (motion:restOfMotions) segment intersectPoints  =
   let
     (ox, oy) = origin
-    newOrigin = movePoint origin newFrame
-    newStartPoint = moveFrame startPoint newFrame
-    endPoint = movePoint startPoint motion
-    newEndPoint = moveFrame endPoint newFrame
-    vectorToIntersect = isAnIntersection startPoint endPoint newStartPoint newEndPoint
-  in case vectorToIntersect of
-    Nothing -> findSegmentCrossingLines newOrigin frameMotions newStartPoint motion intersections
+    newOrigin = movePoint origin motion
+    newSegment = moveFrameForSegment segment motion
+    intersectOffset = segmentsCrossOriginOffset segment newSegment
+    recursiveStep = _intersections newOrigin restOfMotions newSegment
+  in case intersectOffset of
+    Nothing -> recursiveStep intersectPoints
     Just (offx, offy) ->
-      findSegmentCrossingLines newOrigin frameMotions newStartPoint motion (
-        intersections ++ [(ox+offx, oy+offy)]
-      )
+      recursiveStep $ intersectPoints ++ [(ox+offx, oy+offy)]
 
 stepsToPoint :: [Motion] -> (Int, Int) -> Int
 stepsToPoint motions point =
@@ -109,6 +94,10 @@ _stepsAlongLineToPoint (Motion dir dist) origin point count =
       count
     else
       _stepsAlongLineToPoint (Motion dir (dist-1)) newOrigin point (count + 1)
+
+segmentsCrossOriginOffset :: Segment -> Segment -> Maybe (Int, Int)
+segmentsCrossOriginOffset s1 s2 =
+  isAnIntersection (start s1) (end s1) (start s2) (end s2)
 
 isAnIntersection :: (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Maybe (Int, Int)
 isAnIntersection (x1, y1) (x2, y2) (x3, y3) (x4, y4) =
@@ -147,21 +136,26 @@ x p = fst p
 y :: Point -> Int
 y p = snd p
 
-fromMotion :: [Motion] -> [Segment]
-fromMotion motions =
-  _fromMotion (0, 0) motions []
+fromMotions :: [Motion] -> [Segment]
+fromMotions motions =
+  _fromMotions (0, 0) motions []
 
-_fromMotion :: (Int, Int) -> [Motion] -> [Segment] -> [Segment]
-_fromMotion _ [] path = path
-_fromMotion startPoint (motion:restOfMotions) path =
+_fromMotions :: (Int, Int) -> [Motion] -> [Segment] -> [Segment]
+_fromMotions _ [] path = path
+_fromMotions startPoint (motion:restOfMotions) path =
   let
     endPoint = movePoint startPoint motion
+    newSegment = Segment{ start=startPoint, end=endPoint }
   in
-    _fromMotion endPoint restOfMotions $ Segment startPoint endPoint
+    _fromMotions endPoint restOfMotions $ path ++ [newSegment]
 
 moveSegment :: Segment -> Motion -> Segment
 moveSegment seg motion =
   Segment (movePoint (start seg) motion) (movePoint (end seg) motion)
+
+moveFrameForSegment :: Segment -> Motion -> Segment
+moveFrameForSegment seg motion =
+  Segment (moveFrame (start seg) motion) (moveFrame (end seg) motion)
 
 movePoint :: (Int, Int) -> Motion -> (Int, Int)
 movePoint (x,y) (Motion Day3.Up d) = (x, y+d)
