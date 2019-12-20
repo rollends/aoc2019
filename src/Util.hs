@@ -4,7 +4,8 @@ module Util
   (
     AOCApp(AOCApp, appName, appInputFile),
     runApp,
-    uncurry3
+    uncurry3,
+    intPow
   ) where
 
 import RIO
@@ -31,3 +32,10 @@ runApp name innerapp = do
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (a1, b1, c1) = f a1 b1 c1
+
+intPow :: Int -> Int -> Int
+intPow b x =
+  _intPow b x 1
+
+_intPow b 0 v = v
+_intPow b x v = _intPow b (x-1) (v*b)
