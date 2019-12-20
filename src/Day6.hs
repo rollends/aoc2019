@@ -1,13 +1,17 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module Day6
-  ( day6
+  ( day6, day6part2
   ) where
+
+import Control.Monad.Zip (mzipWith)
 
 import RIO
 import qualified RIO.List as L
 import qualified RIO.List.Partial as L'
 import qualified RIO.Text as T
+
+import RIO.List.Partial ((!!))
 
 import Util
 
@@ -23,6 +27,46 @@ day6 orbitPairs =
   in
     countTotalOrbits orbitmap
 
+day6part2 :: [(Name, Name)] -> Int
+day6part2 orbitPairs =
+  let
+    orbitmap = makeOrbitMap orbitPairs
+  in
+    case orbitalTransfersToSanta orbitmap of
+      Just k -> k
+      Nothing -> -1
+
+-- Finds number of orbital transfers from "YOU" to "SAN"
+orbitalTransfersToSanta :: OrbitMap -> Maybe Int
+orbitalTransfersToSanta omap =
+  _orbitalTransfersToSanta 0 omap
+
+_orbitalTransfersToSanta k (Satellite name) =
+  if name == T.pack "YOU" || name == T.pack "SAN" then
+    Just (k-1)
+  else
+    Nothing
+
+_orbitalTransfersToSanta k (HeavyBody name children) =
+  if name == T.pack "YOU" || name == T.pack "SAN" then
+    Just (k-1)
+  else
+    let
+      -- Recursive step
+      childTransfers = map (_orbitalTransfersToSanta (k+1)) children
+      -- Filter out paths that didn't find "YOU" or "SAN".
+      goodChildren = filter isJust childTransfers
+    in
+      case length goodChildren of
+        0 -> Nothing
+        1 -> L'.head goodChildren -- Only found one of "YOU" or "SAN" or got result. Just pass it up.
+        2 ->
+          -- Found both "YOU" and "SAN". We are the common parent.
+          -- Add their distances to the root and then subtract our distance to the root
+          -- to get path length.
+          mzipWith (+) (Just $ -2*k) $ mzipWith (+) (goodChildren !! 0) (goodChildren !! 1)
+
+-- Counts the total number of direct+indirect orbits.
 countTotalOrbits :: OrbitMap -> Int
 countTotalOrbits orbitmap =
   _countTotalOrbits 0 orbitmap

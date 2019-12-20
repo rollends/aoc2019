@@ -18,6 +18,8 @@ appDay6 =
     file_content <- readFileUtf8 inputFile
     logInfo $ fromString "Part 1: "
     (logInfo . displayShow . day6 . toListOfPairs) file_content
+    logInfo $ fromString "Part 2: "
+    (logInfo . displayShow . day6part2 . toListOfPairs) file_content
 
 tokenize :: Text -> (Text, Text)
 tokenize line =

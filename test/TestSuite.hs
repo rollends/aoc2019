@@ -18,6 +18,7 @@ main = do
   day5part2_test2
   day5part2_test3
   day6_test1
+  day6part2_test1
 
 day2_test1 :: IO ()
 day2_test1 = do
@@ -106,3 +107,23 @@ day6_test1 = do
     (T.pack "J", T.pack "K"),
     (T.pack "K", T.pack "L")]
   putStrLn "Expected : 42"
+
+
+day6part2_test1 :: IO ()
+day6part2_test1 = do
+  putStrLn "\nDay 6 Part 2 Test 1:"
+  (putStrLn . show . day6part2) $ [
+    (T.pack "COM", T.pack "B"),
+    (T.pack "B", T.pack "C"),
+    (T.pack "C", T.pack "D"),
+    (T.pack "D", T.pack "E"),
+    (T.pack "E", T.pack "F"),
+    (T.pack "B", T.pack "G"),
+    (T.pack "G", T.pack "H"),
+    (T.pack "D", T.pack "I"),
+    (T.pack "E", T.pack "J"),
+    (T.pack "J", T.pack "K"),
+    (T.pack "K", T.pack "L"),
+    (T.pack "K", T.pack "YOU"),
+    (T.pack "I", T.pack "SAN")]
+  putStrLn "Expected : 4"
