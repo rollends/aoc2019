@@ -20,6 +20,8 @@ appDay5 =
     file_content <- readFileUtf8 inputFile
     logInfo $ fromString "Part 1: "
     (logInfo . displayShow . (day5 1) . string_to_array) file_content
+    logInfo $ fromString "Part 2: "
+    (logInfo . displayShow . (day5 5) . string_to_array) file_content
 
 main :: IO ()
 main = runApp "Day 5" appDay5

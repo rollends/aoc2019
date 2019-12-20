@@ -1,6 +1,7 @@
 import Day2
 import Day3
 import Day4
+import Day5
 
 main :: IO ()
 main = do
@@ -10,6 +11,9 @@ main = do
   day3part2_test1
   day3part2_test2
   day4_test1
+  day5part2_test1
+  day5part2_test2
+  day5part2_test3
 
 day2_test1 :: IO ()
 day2_test1 = do
@@ -48,6 +52,33 @@ day3part2_test2 = do
     ["R98","U47","R26","D63","R33","U87","L62","D20","R33","U53","R51"],
     ["U98","R91","D20","R16","D67","R40","U7","R15","U6","R7"]]
   putStrLn "Expected : 410"
+
+day5part2_test1 :: IO ()
+day5part2_test1 = do
+  putStrLn "\nDay 5 Part 2 Test 1:"
+  (putStrLn . show . (day5 6)) $ [
+    3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
+    1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
+    999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99]
+  putStrLn "Expected : 999"
+
+day5part2_test2 :: IO ()
+day5part2_test2 = do
+  putStrLn "\nDay 5 Part 2 Test 2:"
+  (putStrLn . show . (day5 100)) $ [
+    3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
+    1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
+    999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99]
+  putStrLn "Expected : 1001"
+
+day5part2_test3 :: IO ()
+day5part2_test3 = do
+  putStrLn "\nDay 5 Part 2 Test 3:"
+  (putStrLn . show . (day5 8)) $ [
+    3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
+    1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
+    999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99]
+  putStrLn "Expected : 1000"
 
 day4_test1 :: IO()
 day4_test1 = do

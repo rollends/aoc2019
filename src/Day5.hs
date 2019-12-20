@@ -27,7 +27,15 @@ data ComputerMemory =
 data Computer = Computer { memory :: ComputerMemory, pc :: Int, input :: Int, output :: [Int] }
 
 data Instruction =
-  Add Int Int Int | Multiply Int Int Int | Scan Int | Print Int | Stop
+    Add Int Int Int
+  | Multiply Int Int Int
+  | Scan Int
+  | Print Int
+  | JumpIfTrue Int Int
+  | JumpIfFalse Int Int
+  | LessThan Int Int Int
+  | Equal Int Int Int
+  | Stop
 
 -- Reads value at address of computer's memory.
 -- This is a recursive call that starts at the latest
@@ -77,11 +85,47 @@ fetchInstruction comp =
     2 -> (Multiply (param 1) (param 2) (outParam 3), loc + 4)
     3 -> (Scan (outParam 1), loc + 2)
     4 -> (Print (param 1), loc + 2)
+    5 -> (JumpIfTrue (param 1) (param 2), loc + 3)
+    6 -> (JumpIfFalse (param 1) (param 2), loc + 3)
+    7 -> (LessThan (param 1) (param 2) (outParam 3), loc + 4)
+    8 -> (Equal (param 1) (param 2) (outParam 3), loc + 4)
     99 -> (Stop, loc)
     _ -> (Stop, loc)
 
 -- Executes an Instruction to produce a new State as well as a flag to stop!
 executeInstruction :: Computer -> (Instruction, Int) -> (Computer, Bool)
+
+-- Jump If True Instruction
+executeInstruction comp (JumpIfTrue c p, nextPC) =
+  let
+    newPC = if c == 0 then nextPC else p
+  in
+    (Computer{memory = memory comp, pc = newPC, input = input comp, output = output comp}, True)
+
+-- Jump If False Instruction
+executeInstruction comp (JumpIfFalse c p, nextPC) =
+  let
+    newPC = if c == 0 then p else nextPC
+  in
+    (Computer{memory = memory comp, pc = newPC, input = input comp, output = output comp}, True)
+
+-- Equal Instruction
+executeInstruction comp (Equal x y dest, newPC) =
+  let
+    state = memory comp
+    z = if x == y then 1 else 0
+    newMemory = ModifiedState dest z state
+  in
+    (Computer{memory = newMemory, pc = newPC, input = input comp, output = output comp}, True)
+
+-- Less Than Instruction
+executeInstruction comp (LessThan x y dest, newPC) =
+  let
+    state = memory comp
+    z = if x < y then 1 else 0
+    newMemory = ModifiedState dest z state
+  in
+    (Computer{memory = newMemory, pc = newPC, input = input comp, output = output comp}, True)
 
 -- Add Instruction
 executeInstruction comp (Add x y dest, newPC) =
